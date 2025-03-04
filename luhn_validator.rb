@@ -8,38 +8,37 @@ module LuhnValidator
   # arguments: none
   # assumes: a local String called 'number' exists
   # returns: true/false whether last digit is correct
-  def validate_checksum(number)
+  def validate_checksum
     nums_a = number.to_s.chars.map(&:to_i)
 
     # TODO: use the integers in nums_a to validate its last check digit
 
     # step1: Drop the check digit
+    parity = nums_a.length % 2
     payload = nums_a[0..-2]
-    # step2: transform
-    payload = transform_payload(payload)
+    # puts payload
+    # step2: Transform payload
+    payload_sum = payload_sum(payload, parity)
+    # puts payload_sum
 
-    # step3: sum
-    sum = payload.sum
-
-    # step4: validation
-    check_digit = (10 - (sum % 10)) % 10
-    puts check_digit == nums_a[0..-1]
+    # step3: Sum all resulting digits
+    nums_a[-1] == ((10 - (payload_sum % 10)) % 10)
   end
-end
 
-private
+  private
 
-def transform_payload(payload)
-  payload.each_with_index do |value, index|
-    if index.even?
-      value *= 2
-      value -= 9 if value > 9
+  def payload_sum(payload, parity)
+    payload.map.with_index.inject(0) do |sum, (value, index)|
+      sum + if index % 2 != parity
+              value
+            elsif value > 4
+              2 * value - 9
+            else
+              2 * value
+            end
     end
-    payload[index] = value
   end
-  payload
 end
-
 # local test
 
 # class Validator
@@ -47,4 +46,4 @@ end
 # end
 
 # validator = Validator.new
-# validator.validate_checksum(11111)
+# validator.validate_checksum(374242548357378)
